@@ -3,49 +3,51 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-const agents = [
-  {
-    id: 1,
-    name: 'Юрист',
-    description: 'Анализирует дела, разрабатывает стратегии защиты',
-    icon: '⚖️'
-  },
-  {
-    id: 2,
-    name: 'Домашний помощник',
-    description: 'Управляет умным домом и личными задачами',
-    icon: '🏠'
-  },
-  {
-    id: 3,
-    name: 'Маркетолог',
-    description: 'Создает стратегии продвижения и контент',
-    icon: '📈'
-  },
-  {
-    id: 4,
-    name: 'Медик',
-    description: 'Помогает в диагностике и лечении',
-    icon: '🩺'
-  },
-  {
-    id: 5,
-    name: 'Путешественник',
-    description: 'Планирует идеальные маршруты и поездки',
-    icon: '✈️'
-  }
-];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
+  const { t } = useLanguage();
   const [currentAgent, setCurrentAgent] = useState(0);
+
+  const agents = [
+    {
+      id: 1,
+      name: t('agent.lawyer'),
+      description: t('agent.lawyer.desc'),
+      icon: '⚖️'
+    },
+    {
+      id: 2,
+      name: t('agent.home-assistant'),
+      description: t('agent.home-assistant.desc'),
+      icon: '🏠'
+    },
+    {
+      id: 3,
+      name: t('agent.marketer'),
+      description: t('agent.marketer.desc'),
+      icon: '📈'
+    },
+    {
+      id: 4,
+      name: t('agent.medic'),
+      description: t('agent.medic.desc'),
+      icon: '🩺'
+    },
+    {
+      id: 5,
+      name: t('agent.traveler'),
+      description: t('agent.traveler.desc'),
+      icon: '✈️'
+    }
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentAgent((prev) => (prev + 1) % agents.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [agents.length]);
 
   const nextAgent = () => {
     setCurrentAgent((prev) => (prev + 1) % agents.length);
@@ -69,15 +71,11 @@ const Index = () => {
 
         <div className="relative z-10 text-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="font-orbitron font-black text-4xl md:text-6xl lg:text-7xl xl:text-8xl mb-8 animate-slide-in">
-            <span className="neon-text">CosmoLab:</span>
-            <br />
-            <span className="text-white">Мастерская</span>
-            <br />
-            <span className="neon-text">Умных Агентов</span>
+            <span className="neon-text">{t('home.title')}</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto animate-slide-in" style={{animationDelay: '0.3s'}}>
-            Решай любые задачи с Cosmo и агентами
+            {t('home.subtitle')}
           </p>
 
           <div className="animate-slide-in" style={{animationDelay: '0.6s'}}>
@@ -86,7 +84,7 @@ const Index = () => {
               size="lg"
               className="bg-gradient-to-r from-neon-purple via-neon-blue to-neon-green hover:from-neon-green hover:via-neon-blue hover:to-neon-purple text-white font-bold px-12 py-6 text-xl rounded-full transition-all duration-500 animate-neon-pulse shadow-2xl"
             >
-              <Link to="/cosmo-token">Купить Cosmo</Link>
+              <Link to="/cosmo-token">{t('nav.buy-cosmo')}</Link>
             </Button>
           </div>
         </div>
@@ -103,7 +101,7 @@ const Index = () => {
       <section className="py-20 bg-cosmos-darker/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl md:text-5xl font-orbitron font-bold text-center mb-16">
-            <span className="neon-text">Наши Агенты</span>
+            <span className="neon-text">{t('home.our-agents')}</span>
           </h2>
 
           <div className="relative">
@@ -130,7 +128,7 @@ const Index = () => {
                     asChild
                     className="bg-gradient-to-r from-neon-blue to-neon-purple hover:from-neon-purple hover:to-neon-green text-white"
                   >
-                    <Link to="/services">Заказать агента</Link>
+                    <Link to="/services">{t('home.order-agent')}</Link>
                   </Button>
                 </div>
               </div>
@@ -163,10 +161,10 @@ const Index = () => {
       <section className="py-20">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-8">
-            <span className="neon-text">Готов к будущему?</span>
+            <span className="neon-text">{t('home.ready-future')}</span>
           </h2>
           <p className="text-xl text-gray-300 mb-12">
-            Присоединяйся к революции ИИ агентов прямо сейчас. Купи токен Cosmo и получи доступ к миллионам умных помощников.
+            {t('home.join-revolution')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -174,7 +172,7 @@ const Index = () => {
               size="lg"
               className="bg-gradient-to-r from-neon-purple to-neon-blue hover:from-neon-blue hover:to-neon-green text-white font-bold px-8 py-4 text-lg rounded-full transition-all duration-300"
             >
-              <Link to="/cosmo-token">Купить Cosmo</Link>
+              <Link to="/cosmo-token">{t('nav.buy-cosmo')}</Link>
             </Button>
             <Button 
               asChild
@@ -182,7 +180,7 @@ const Index = () => {
               variant="outline"
               className="border-neon-blue text-neon-blue hover:bg-neon-blue hover:text-cosmos-dark px-8 py-4 text-lg rounded-full transition-all duration-300"
             >
-              <Link to="/services">Заказать агента</Link>
+              <Link to="/services">{t('btn.order-agent')}</Link>
             </Button>
           </div>
         </div>

@@ -4,19 +4,22 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { t } = useLanguage();
 
   const navigation = [
-    { name: 'Главная', href: '/' },
-    { name: 'О нас', href: '/about' },
-    { name: 'Кейсы', href: '/cases' },
-    { name: 'Услуги', href: '/services' },
-    { name: 'Токен Cosmo', href: '/cosmo-token' },
-    { name: 'Блог', href: '/blog' },
-    { name: 'Контакты', href: '/contact' },
+    { name: t('nav.home'), href: '/' },
+    { name: t('nav.about'), href: '/about' },
+    { name: t('nav.cases'), href: '/cases' },
+    { name: t('nav.services'), href: '/services' },
+    { name: t('nav.cosmo-token'), href: '/cosmo-token' },
+    { name: t('nav.blog'), href: '/blog' },
+    { name: t('nav.contact'), href: '/contact' },
   ];
 
   return (
@@ -46,16 +49,18 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
+            <LanguageSwitcher />
             <Button 
               asChild
               className="bg-gradient-to-r from-neon-purple to-neon-blue hover:from-neon-blue hover:to-neon-green text-white font-bold px-6 py-2 rounded-full transition-all duration-300 animate-neon-pulse"
             >
-              <Link to="/cosmo-token">Купить Cosmo</Link>
+              <Link to="/cosmo-token">{t('nav.buy-cosmo')}</Link>
             </Button>
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center space-x-2">
+            <LanguageSwitcher />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-300 hover:text-neon-blue p-2"
@@ -91,7 +96,7 @@ const Navbar = () => {
                 className="w-full bg-gradient-to-r from-neon-purple to-neon-blue hover:from-neon-blue hover:to-neon-green text-white font-bold"
               >
                 <Link to="/cosmo-token" onClick={() => setIsOpen(false)}>
-                  Купить Cosmo
+                  {t('nav.buy-cosmo')}
                 </Link>
               </Button>
             </div>
