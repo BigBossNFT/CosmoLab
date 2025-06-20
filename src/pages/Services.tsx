@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import WalletConnect from '@/components/WalletConnect';
 
 const services = [
   {
@@ -100,10 +100,27 @@ const Services = () => {
     service: '',
     description: ''
   });
+  const [walletBalance, setWalletBalance] = useState('0');
+  const [hasEnoughBalance, setHasEnoughBalance] = useState(false);
   const { toast } = useToast();
+
+  const handleWalletBalanceChange = (balance: string, hasEnough: boolean) => {
+    setWalletBalance(balance);
+    setHasEnoughBalance(hasEnough);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!hasEnoughBalance) {
+      toast({
+        title: "Недостаточно Cosmo для заказа",
+        description: "Купите токены Cosmo на сумму от 2000 USDT",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!formData.name || !formData.email || !formData.service || !formData.description) {
       toast({
         title: "Ошибка",
@@ -189,6 +206,9 @@ const Services = () => {
               <span className="neon-text">Заказать агента</span>
             </h2>
             
+            {/* Wallet Connection */}
+            <WalletConnect onBalanceChange={handleWalletBalanceChange} />
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -246,22 +266,36 @@ const Services = () => {
                 />
               </div>
 
-              <div className="bg-neon-blue/10 border border-neon-blue/30 rounded-xl p-4">
+              <div className={`border rounded-xl p-4 ${hasEnoughBalance ? 'bg-neon-green/10 border-neon-green/30' : 'bg-red-500/10 border-red-500/30'}`}>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Стоимость:</span>
                   <span className="text-neon-green font-bold text-xl">$2,000 в Cosmo</span>
                 </div>
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-gray-300">Ваш баланс:</span>
+                  <span className={`font-bold ${hasEnoughBalance ? 'text-neon-green' : 'text-red-400'}`}>
+                    {walletBalance} Cosmo
+                  </span>
+                </div>
                 <p className="text-sm text-gray-400 mt-2">
-                  Оплата производится только в токенах Cosmo по текущему курсу
+                  {hasEnoughBalance 
+                    ? "У вас достаточно токенов для заказа"
+                    : "Недостаточно токенов. Купите Cosmo на PancakeSwap"
+                  }
                 </p>
               </div>
 
               <Button 
                 type="submit"
                 size="lg"
-                className="w-full bg-gradient-to-r from-neon-purple to-neon-blue hover:from-neon-blue hover:to-neon-green text-white font-bold py-4 text-lg rounded-full transition-all duration-300"
+                disabled={!hasEnoughBalance}
+                className={`w-full font-bold py-4 text-lg rounded-full transition-all duration-300 ${
+                  hasEnoughBalance 
+                    ? 'bg-gradient-to-r from-neon-purple to-neon-blue hover:from-neon-blue hover:to-neon-green text-white'
+                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                }`}
               >
-                Отправить заявку
+                {hasEnoughBalance ? 'Отправить заявку' : 'Недостаточно Cosmo'}
               </Button>
             </form>
           </div>
