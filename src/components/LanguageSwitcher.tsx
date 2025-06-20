@@ -31,9 +31,7 @@ const LanguageSwitcher = () => {
     <div className="flex items-center">
       <Globe className="w-4 h-4 text-gray-400 mr-2" />
       <DropdownMenu>
-        <Drop
-
-ownMenuTrigger asChild>
+        <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="sm"
@@ -44,12 +42,12 @@ ownMenuTrigger asChild>
             <span className="sm:hidden">{currentLanguage?.code.toUpperCase()}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuContent align="end" className="w-48 bg-cosmos-darker border border-neon-blue/20 z-50">
           {languages.map((lang) => (
             <DropdownMenuItem
               key={lang.code}
               onClick={() => setLanguage(lang.code as any)}
-              className={`flex items-center space-x-2 cursor-pointer ${
+              className={`flex items-center space-x-2 cursor-pointer text-gray-300 hover:bg-neon-blue/20 hover:text-neon-blue ${
                 language === lang.code ? 'bg-neon-blue/20 text-neon-blue' : ''
               }`}
             >
