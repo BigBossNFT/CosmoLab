@@ -81,6 +81,45 @@
     background-size: 50px 50px;
     animation: grid-move 20s linear infinite;
   }
+
+  /* Стили для уведомлений - неоново-голубой цвет */
+  [data-sonner-toast] {
+    background: rgba(10, 10, 15, 0.95) !important;
+    border: 1px solid rgba(0, 212, 255, 0.3) !important;
+    color: rgb(0, 212, 255) !important;
+  }
+
+  [data-sonner-toast][data-type="success"] {
+    background: rgba(10, 10, 15, 0.95) !important;
+    border: 1px solid rgba(0, 255, 136, 0.3) !important;
+    color: rgb(0, 255, 136) !important;
+  }
+
+  [data-sonner-toast][data-type="error"] {
+    background: rgba(10, 10, 15, 0.95) !important;
+    border: 1px solid rgba(255, 64, 129, 0.3) !important;
+    color: rgb(255, 64, 129) !important;
+  }
+
+  [data-sonner-toast] [data-title] {
+    color: rgb(0, 212, 255) !important;
+    font-weight: 600 !important;
+  }
+
+  [data-sonner-toast] [data-description] {
+    color: rgb(0, 212, 255) !important;
+    opacity: 0.8 !important;
+  }
+
+  [data-sonner-toast][data-type="success"] [data-title],
+  [data-sonner-toast][data-type="success"] [data-description] {
+    color: rgb(0, 255, 136) !important;
+  }
+
+  [data-sonner-toast][data-type="error"] [data-title],
+  [data-sonner-toast][data-type="error"] [data-description] {
+    color: rgb(255, 64, 129) !important;
+  }
 }
 
 .scrollbar-thin {

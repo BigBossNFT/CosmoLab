@@ -246,6 +246,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_current_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       initialize_user_levels: {
         Args: { user_uuid: string }
         Returns: undefined

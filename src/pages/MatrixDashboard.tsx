@@ -58,32 +58,48 @@ const MatrixDashboard = () => {
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
+      console.log('Loading dashboard data for user:', user);
 
       // Загружаем уровни агентов
-      const { data: levels } = await supabase
+      const { data: levels, error: levelsError } = await supabase
         .from('agent_levels')
         .select('*')
         .eq('user_id', user.id)
         .order('level_number');
 
+      if (levelsError) {
+        console.error('Error loading levels:', levelsError);
+        throw levelsError;
+      }
+
       if (levels) setAgentLevels(levels);
 
       // Загружаем позиции матрицы
-      const { data: positions } = await supabase
+      const { data: positions, error: positionsError } = await supabase
         .from('matrix_positions')
         .select('*')
         .eq('user_id', user.id)
         .order('level_number, position_number');
 
+      if (positionsError) {
+        console.error('Error loading positions:', positionsError);
+        throw positionsError;
+      }
+
       if (positions) setMatrixPositions(positions);
 
       // Загружаем транзакции
-      const { data: txs } = await supabase
+      const { data: txs, error: txsError } = await supabase
         .from('transactions')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
+
+      if (txsError) {
+        console.error('Error loading transactions:', txsError);
+        throw txsError;
+      }
 
       if (txs) setTransactions(txs);
 
@@ -91,12 +107,16 @@ const MatrixDashboard = () => {
       const earnings = txs?.filter(tx => tx.transaction_type === 'earning').reduce((sum, tx) => sum + parseFloat(tx.amount.toString()), 0) || 0;
       setTotalBalance(earnings);
 
-      const { count } = await supabase
+      const { count, error: countError } = await supabase
         .from('users')
         .select('*', { count: 'exact', head: true })
         .eq('referrer_id', user.id);
 
-      setReferralCount(count || 0);
+      if (countError) {
+        console.error('Error loading referral count:', countError);
+      } else {
+        setReferralCount(count || 0);
+      }
 
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -115,8 +135,7 @@ const MatrixDashboard = () => {
       if (!window.ethereum) {
         toast({
           title: "Ошибка",
-          description: "MetaMask не найден",
-          variant: "destructive"
+          description: "MetaMask не найден"
         });
         return;
       }
@@ -160,7 +179,7 @@ const MatrixDashboard = () => {
 
       toast({
         title: "Уровень разблокирован!",
-        description: `Уровень Агентов ${levelNumber} успешно разблокирован`,
+        description: `Уровень Агентов ${levelNumber} успешно разблокирован`
       });
 
       loadDashboardData();
@@ -180,7 +199,7 @@ const MatrixDashboard = () => {
     navigator.clipboard.writeText(referralLink);
     toast({
       title: "Ссылка скопирована",
-      description: "Реферальная ссылка скопирована в буфер обмена",
+      description: "Реферальная ссылка скопирована в буфер обмена"
     });
   };
 

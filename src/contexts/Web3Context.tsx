@@ -36,6 +36,7 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
   const connectWallet = async () => {
     try {
       setIsLoading(true);
+      console.log('Starting wallet connection...');
       
       if (!window.ethereum) {
         toast({
@@ -52,41 +53,60 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
 
       if (accounts.length > 0) {
         const walletAddress = accounts[0].toLowerCase();
+        console.log('Wallet connected:', walletAddress);
         setAccount(walletAddress);
         setIsConnected(true);
 
-        // Проверяем или создаем пользователя в Supabase
-        const { data: existingUser } = await supabase
+        // Проверяем существующего пользователя
+        console.log('Checking for existing user...');
+        const { data: existingUser, error: selectError } = await supabase
           .from('users')
           .select('*')
           .eq('wallet_address', walletAddress)
-          .single();
+          .maybeSingle();
+
+        console.log('Existing user check result:', { existingUser, selectError });
+
+        if (selectError) {
+          console.error('Error checking existing user:', selectError);
+          throw selectError;
+        }
 
         if (!existingUser) {
           // Создаем нового пользователя
-          const { data: newUser, error } = await supabase
+          console.log('Creating new user...');
+          const { data: newUser, error: insertError } = await supabase
             .from('users')
-            .insert({ wallet_address: walletAddress })
+            .insert({ 
+              wallet_address: walletAddress,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
             .select()
             .single();
 
-          if (error) {
-            console.error('Error creating user:', error);
+          console.log('New user creation result:', { newUser, insertError });
+
+          if (insertError) {
+            console.error('Error creating user:', insertError);
             toast({
               title: "Ошибка",
-              description: "Не удалось создать пользователя",
+              description: `Не удалось создать пользователя: ${insertError.message}`,
               variant: "destructive"
             });
             return;
           }
           setUser(newUser);
+          console.log('New user created successfully:', newUser);
         } else {
           setUser(existingUser);
+          console.log('Using existing user:', existingUser);
         }
 
         toast({
           title: "Кошелек подключен",
           description: `Адрес: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
+          className: "border-neon-blue/30 bg-cosmos-dark/90 text-neon-blue"
         });
       }
     } catch (error: any) {
@@ -94,7 +114,8 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
       toast({
         title: "Ошибка подключения",
         description: error.message || "Не удалось подключить кошелек",
-        variant: "destructive"
+        variant: "destructive",
+        className: "border-red-500/30 bg-cosmos-dark/90 text-red-400"
       });
     } finally {
       setIsLoading(false);
@@ -108,6 +129,7 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
     toast({
       title: "Кошелек отключен",
       description: "Ваш кошелек был отключен",
+      className: "border-neon-blue/30 bg-cosmos-dark/90 text-neon-blue"
     });
   };
 
@@ -115,20 +137,24 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkConnection = async () => {
       if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts.length > 0) {
-          const walletAddress = accounts[0].toLowerCase();
-          setAccount(walletAddress);
-          setIsConnected(true);
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts.length > 0) {
+            const walletAddress = accounts[0].toLowerCase();
+            setAccount(walletAddress);
+            setIsConnected(true);
 
-          // Получаем данные пользователя
-          const { data: userData } = await supabase
-            .from('users')
-            .select('*')
-            .eq('wallet_address', walletAddress)
-            .single();
+            // Получаем данные пользователя
+            const { data: userData } = await supabase
+              .from('users')
+              .select('*')
+              .eq('wallet_address', walletAddress)
+              .maybeSingle();
 
-          setUser(userData);
+            setUser(userData);
+          }
+        } catch (error) {
+          console.error('Error checking connection:', error);
         }
       }
     };
@@ -137,13 +163,19 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
 
     // Слушаем изменения аккаунта
     if (window.ethereum) {
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
+      const handleAccountsChanged = (accounts: string[]) => {
         if (accounts.length === 0) {
           disconnectWallet();
         } else {
           connectWallet();
         }
-      });
+      };
+
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+
+      return () => {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      };
     }
   }, []);
 
