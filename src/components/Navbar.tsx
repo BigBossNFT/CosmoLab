@@ -6,6 +6,7 @@ import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import Web3AuthButton from './Web3AuthButton';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,6 +51,7 @@ const Navbar = () => {
               </Link>
             ))}
             <LanguageSwitcher />
+            <Web3AuthButton />
             <Button 
               asChild
               className="bg-gradient-to-r from-neon-purple to-neon-blue hover:from-neon-blue hover:to-neon-green text-white font-bold px-6 py-2 rounded-full transition-all duration-300 animate-neon-pulse"
@@ -61,6 +63,7 @@ const Navbar = () => {
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
             <LanguageSwitcher />
+            <Web3AuthButton />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-300 hover:text-neon-blue p-2"
@@ -82,7 +85,7 @@ const Navbar = () => {
                 className={cn(
                   "block px-3 py-2 text-base font-medium transition-colors",
                   location.pathname === item.href
-                    ? "text-neon-blue"
+                    ? "text-n eon-blue"
                     : "text-gray-300 hover:text-neon-blue"
                 )}
                 onClick={() => setIsOpen(false)}
