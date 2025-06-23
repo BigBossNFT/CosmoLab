@@ -79,7 +79,8 @@ const LevelPurchaseModal = ({
     if (!purchaseData || !window.ethereum) {
       toast({
         title: "Ошибка",
-        description: "MetaMask не найден или данные не загружены"
+        description: "MetaMask не найден или данные не загружены",
+        variant: "destructive"
       });
       return;
     }
@@ -88,13 +89,19 @@ const LevelPurchaseModal = ({
     console.log('Starting purchase process...', purchaseData);
 
     try {
+      // Получаем текущий аккаунт
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts.length === 0) {
+        throw new Error('Кошелек не подключен');
+      }
+
       // Инициируем транзакцию через MetaMask
       const priceInWei = (purchaseData.total_cost * Math.pow(10, 18)).toString(16);
       
       const txHash = await window.ethereum.request({
         method: 'eth_sendTransaction',
         params: [{
-          from: window.ethereum.selectedAddress,
+          from: accounts[0],
           to: '0x0000000000000000000000000000000000000000', // Замените на адрес вашего контракта
           value: `0x${priceInWei}`,
         }],
