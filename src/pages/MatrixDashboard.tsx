@@ -6,8 +6,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Lock, Unlock, Users, TrendingUp, Wallet, Copy } from 'lucide-react';
+import { Lock, Unlock, Users, TrendingUp, Wallet, Copy, Settings, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import LevelSlider from '@/components/LevelSlider';
+import MatrixVisualization from '@/components/MatrixVisualization';
+import SystemInfoSection from '@/components/SystemInfoSection';
+import BalanceWidget from '@/components/BalanceWidget';
 
 interface AgentLevel {
   id: string;
@@ -43,6 +48,7 @@ const MatrixDashboard = () => {
   const [totalBalance, setTotalBalance] = useState(0);
   const [referralCount, setReferralCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentLevel, setCurrentLevel] = useState(1);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -152,7 +158,7 @@ const MatrixDashboard = () => {
         }],
       });
 
-      // Обновляем уровень в базе данных
+      // Об��овляем уровень в базе данных
       const { error } = await supabase
         .from('agent_levels')
         .update({ 
@@ -203,45 +209,7 @@ const MatrixDashboard = () => {
     });
   };
 
-  const renderMatrixLevel = (levelNumber: number) => {
-    const levelPositions = matrixPositions.filter(p => p.level_number === levelNumber);
-    const level = agentLevels.find(l => l.level_number === levelNumber);
-    
-    return (
-      <div className="matrix-level">
-        {/* Позиция 1 (вверху) */}
-        <div className="flex justify-center mb-4">
-          <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xs ${
-            levelPositions[0]?.occupied_by ? 'bg-neon-green/20 border-neon-green' : 'bg-gray-800 border-gray-600'
-          }`}>
-            {levelPositions[0]?.occupied_by ? '👤' : '○'}
-          </div>
-        </div>
-        
-        {/* Позиции 2-3 (первый уровень) */}
-        <div className="flex justify-center gap-8 mb-4">
-          {[1, 2].map(pos => (
-            <div key={pos} className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs ${
-              levelPositions[pos]?.occupied_by ? 'bg-neon-blue/20 border-neon-blue' : 'bg-gray-800 border-gray-600'
-            }`}>
-              {levelPositions[pos]?.occupied_by ? '👤' : '○'}
-            </div>
-          ))}
-        </div>
-        
-        {/* Позиции 4-7 (второй уровень) */}
-        <div className="flex justify-center gap-4">
-          {[3, 4, 5, 6].map(pos => (
-            <div key={pos} className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs ${
-              levelPositions[pos]?.occupied_by ? 'bg-neon-purple/20 border-neon-purple' : 'bg-gray-800 border-gray-600'
-            }`}>
-              {levelPositions[pos]?.occupied_by ? '👤' : '○'}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
+  const unlockedLevels = agentLevels.filter(l => l.is_unlocked).map(l => l.level_number);
 
   if (isLoading) {
     return (
@@ -262,149 +230,215 @@ const MatrixDashboard = () => {
           <div className="w-24 h-1 bg-gradient-to-r from-neon-blue to-neon-purple"></div>
         </div>
 
-        {/* Stats Dashboard */}
-        <div className="grid lg:grid-cols-4 gap-6 mb-12">
-          <Card className="glass-effect border-neon-green/30 p-6">
-            <div className="flex items-center space-x-3">
-              <Wallet className="w-8 h-8 text-neon-green" />
-              <div>
-                <p className="text-gray-400 text-sm">Баланс</p>
-                <p className="text-2xl font-orbitron font-bold text-neon-green">
-                  {totalBalance.toFixed(4)} BNB
-                </p>
-              </div>
-            </div>
-          </Card>
+        <Tabs defaultValue="overview" className="space-y-8">
+          <TabsList className="grid w-full grid-cols-4 bg-cosmos-darker border border-neon-blue/20">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-neon-blue/20 data-[state=active]:text-neon-blue">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Обзор
+            </TabsTrigger>
+            <TabsTrigger value="matrix" className="data-[state=active]:bg-neon-green/20 data-[state=active]:text-neon-green">
+              <Users className="w-4 h-4 mr-2" />
+              Матрица
+            </TabsTrigger>
+            <TabsTrigger value="balances" className="data-[state=active]:bg-neon-purple/20 data-[state=active]:text-neon-purple">
+              <Wallet className="w-4 h-4 mr-2" />
+              Балансы
+            </TabsTrigger>
+            <TabsTrigger value="info" className="data-[state=active]:bg-yellow-500/20 data-[state=active]:text-yellow-400">
+              <Info className="w-4 h-4 mr-2" />
+              О системе
+            </TabsTrigger>
+          </TabsList>
 
-          <Card className="glass-effect border-neon-blue/30 p-6">
-            <div className="flex items-center space-x-3">
-              <Users className="w-8 h-8 text-neon-blue" />
-              <div>
-                <p className="text-gray-400 text-sm">Рефералы</p>
-                <p className="text-2xl font-orbitron font-bold text-neon-blue">
-                  {referralCount}
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="glass-effect border-neon-purple/30 p-6">
-            <div className="flex items-center space-x-3">
-              <TrendingUp className="w-8 h-8 text-neon-purple" />
-              <div>
-                <p className="text-gray-400 text-sm">Активных уровней</p>
-                <p className="text-2xl font-orbitron font-bold text-neon-purple">
-                  {agentLevels.filter(l => l.is_unlocked).length}/10
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="glass-effect border-neon-blue/30 p-6">
-            <div className="text-center">
-              <p className="text-gray-400 text-sm mb-2">Реферальная ссылка</p>
-              <Button 
-                onClick={copyReferralLink}
-                size="sm"
-                className="bg-neon-blue/20 hover:bg-neon-blue/40 text-neon-blue border border-neon-blue/30"
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                Копировать
-              </Button>
-            </div>
-          </Card>
-        </div>
-
-        {/* Agent Levels Grid */}
-        <div className="mb-12">
-          <h2 className="text-3xl font-orbitron font-bold mb-8 text-neon-blue">
-            Уровни Агентов
-          </h2>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            {agentLevels.map((level) => (
-              <Card key={level.id} className="glass-effect border-neon-blue/30 p-6 text-center">
-                <div className="mb-4">
-                  {level.is_unlocked ? (
-                    <Unlock className="w-8 h-8 text-neon-green mx-auto animate-pulse" />
-                  ) : (
-                    <Lock className="w-8 h-8 text-gray-500 mx-auto" />
-                  )}
-                </div>
-                
-                <h3 className="text-xl font-orbitron font-bold mb-2 text-white">
-                  Уровень {level.level_number}
-                </h3>
-                
-                <p className="text-neon-blue font-bold mb-4">
-                  {level.unlock_price} BNB
-                </p>
-
-                {level.is_unlocked ? (
-                  <div className="space-y-4">
-                    <Badge className="bg-neon-green/20 text-neon-green">
-                      Разблокирован
-                    </Badge>
-                    
-                    {/* Матричная схема */}
-                    <div className="bg-cosmos-darker/50 rounded-lg p-4">
-                      {renderMatrixLevel(level.level_number)}
-                    </div>
-                  </div>
-                ) : (
-                  <Button 
-                    onClick={() => unlockLevel(level.level_number, level.unlock_price)}
-                    className="w-full bg-gradient-to-r from-neon-purple to-neon-blue hover:from-neon-blue hover:to-neon-green text-white"
-                  >
-                    Разблокировать
-                  </Button>
-                )}
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Transaction History */}
-        <Card className="glass-effect border-neon-green/30 p-6">
-          <h2 className="text-2xl font-orbitron font-bold mb-6 text-neon-green">
-            История транзакций
-          </h2>
-          
-          <div className="space-y-3">
-            {transactions.length > 0 ? (
-              transactions.map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between p-4 bg-cosmos-darker/50 rounded-lg">
+          <TabsContent value="overview" className="space-y-8">
+            {/* Stats Dashboard */}
+            <div className="grid lg:grid-cols-4 gap-6">
+              <Card className="glass-effect border-neon-green/30 p-6">
+                <div className="flex items-center space-x-3">
+                  <Wallet className="w-8 h-8 text-neon-green" />
                   <div>
-                    <p className="text-white font-medium">{tx.description}</p>
-                    <p className="text-gray-400 text-sm">
-                      {new Date(tx.created_at).toLocaleDateString('ru-RU')}
+                    <p className="text-gray-400 text-sm">Заработано</p>
+                    <p className="text-2xl font-orbitron font-bold text-neon-green">
+                      {totalBalance.toFixed(4)} BNB
                     </p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-bold ${
-                      tx.transaction_type === 'earning' ? 'text-neon-green' : 
-                      tx.transaction_type === 'purchase' ? 'text-neon-blue' : 'text-gray-400'
-                    }`}>
-                      {tx.transaction_type === 'earning' ? '+' : '-'}{tx.amount} BNB
-                    </p>
-                    <Badge className={
-                      tx.status === 'completed' ? 'bg-neon-green/20 text-neon-green' :
-                      tx.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                      'bg-red-500/20 text-red-400'
-                    }>
-                      {tx.status === 'completed' ? 'Завершено' :
-                       tx.status === 'pending' ? 'В ожидании' : 'Ошибка'}
-                    </Badge>
                   </div>
                 </div>
-              ))
-            ) : (
-              <p className="text-gray-400 text-center py-8">
-                Транзакций пока нет
-              </p>
-            )}
-          </div>
-        </Card>
+              </Card>
+
+              <Card className="glass-effect border-neon-blue/30 p-6">
+                <div className="flex items-center space-x-3">
+                  <Users className="w-8 h-8 text-neon-blue" />
+                  <div>
+                    <p className="text-gray-400 text-sm">Рефералы</p>
+                    <p className="text-2xl font-orbitron font-bold text-neon-blue">
+                      {referralCount}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="glass-effect border-neon-purple/30 p-6">
+                <div className="flex items-center space-x-3">
+                  <TrendingUp className="w-8 h-8 text-neon-purple" />
+                  <div>
+                    <p className="text-gray-400 text-sm">Активных уровней</p>
+                    <p className="text-2xl font-orbitron font-bold text-neon-purple">
+                      {agentLevels.filter(l => l.is_unlocked).length}/10
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="glass-effect border-neon-blue/30 p-6">
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm mb-2">Реферальная ссылка</p>
+                  <div className="text-xs text-gray-500 mb-2 break-all">
+                    {`${window.location.origin}/?ref=${user.id}`}
+                  </div>
+                  <Button 
+                    onClick={copyReferralLink}
+                    size="sm"
+                    className="bg-neon-blue/20 hover:bg-neon-blue/40 text-neon-blue border border-neon-blue/30"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Копировать
+                  </Button>
+                </div>
+              </Card>
+            </div>
+
+            {/* Agent Levels Grid */}
+            <div>
+              <h2 className="text-3xl font-orbitron font-bold mb-8 text-neon-blue">
+                Уровни Агентов
+              </h2>
+              
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                {agentLevels.map((level) => (
+                  <Card key={level.id} className="glass-effect border-neon-blue/30 p-6 text-center hover:border-neon-blue/50 transition-all duration-300 transform hover:scale-105">
+                    <div className="mb-4">
+                      {level.is_unlocked ? (
+                        <Unlock className="w-8 h-8 text-neon-green mx-auto animate-pulse" />
+                      ) : (
+                        <Lock className="w-8 h-8 text-gray-500 mx-auto" />
+                      )}
+                    </div>
+                    
+                    <h3 className="text-xl font-orbitron font-bold mb-2 text-white">
+                      Уровень {level.level_number}
+                    </h3>
+                    
+                    <p className="text-neon-blue font-bold mb-4">
+                      {level.unlock_price} BNB
+                    </p>
+
+                    {level.is_unlocked ? (
+                      <Badge className="bg-neon-green/20 text-neon-green">
+                        Разблокирован
+                      </Badge>
+                    ) : (
+                      <Button 
+                        onClick={() => unlockLevel(level.level_number, level.unlock_price)}
+                        className="w-full bg-gradient-to-r from-neon-purple to-neon-blue hover:from-neon-blue hover:to-neon-green text-white"
+                      >
+                        Разблокировать
+                      </Button>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Transaction History */}
+            <Card className="glass-effect border-neon-green/30 p-6">
+              <h2 className="text-2xl font-orbitron font-bold mb-6 text-neon-green">
+                История транзакций
+              </h2>
+              
+              <div className="space-y-3">
+                {transactions.length > 0 ? (
+                  transactions.map((tx) => (
+                    <div key={tx.id} className="flex items-center justify-between p-4 bg-cosmos-darker/50 rounded-lg hover:bg-cosmos-darker/70 transition-colors">
+                      <div>
+                        <p className="text-white font-medium">{tx.description}</p>
+                        <p className="text-gray-400 text-sm">
+                          {new Date(tx.created_at).toLocaleDateString('ru-RU')}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-bold ${
+                          tx.transaction_type === 'earning' ? 'text-neon-green' : 
+                          tx.transaction_type === 'purchase' ? 'text-neon-blue' : 'text-gray-400'
+                        }`}>
+                          {tx.transaction_type === 'earning' ? '+' : '-'}{tx.amount} BNB
+                        </p>
+                        <Badge className={
+                          tx.status === 'completed' ? 'bg-neon-green/20 text-neon-green' :
+                          tx.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-red-500/20 text-red-400'
+                        }>
+                          {tx.status === 'completed' ? 'Завершено' :
+                           tx.status === 'pending' ? 'В ожидании' : 'Ошибка'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-center py-8">
+                    Транзакций пока нет
+                  </p>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="matrix" className="space-y-8">
+            <div>
+              <h2 className="text-3xl font-orbitron font-bold mb-8 text-neon-green text-center">
+                Визуализация матрицы
+              </h2>
+              
+              <LevelSlider 
+                currentLevel={currentLevel}
+                onLevelChange={setCurrentLevel}
+                unlockedLevels={unlockedLevels}
+              />
+              
+              <MatrixVisualization 
+                level={currentLevel}
+                positions={matrixPositions}
+                isUnlocked={unlockedLevels.includes(currentLevel)}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="balances" className="space-y-8">
+            <div className="grid lg:grid-cols-2 gap-8">
+              <BalanceWidget userId={user.id} />
+              
+              <Card className="glass-effect border-neon-blue/30 p-6">
+                <h3 className="text-xl font-orbitron font-bold mb-4 text-neon-blue">
+                  Быстрые действия
+                </h3>
+                <div className="space-y-4">
+                  <Button className="w-full bg-gradient-to-r from-neon-green to-neon-blue hover:from-neon-blue hover:to-neon-purple text-white">
+                    Пополнить баланс
+                  </Button>
+                  <Button className="w-full bg-gradient-to-r from-neon-purple to-neon-blue hover:from-neon-blue hover:to-neon-green text-white">
+                    Вывести средства
+                  </Button>
+                  <Button className="w-full border border-neon-blue/30 text-neon-blue hover:bg-neon-blue/20">
+                    История операций
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="info" className="space-y-8">
+            <SystemInfoSection />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

@@ -209,6 +209,38 @@ export type Database = {
           },
         ]
       }
+      user_balances: {
+        Row: {
+          bnb_balance: number | null
+          cosmo_balance: number | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bnb_balance?: number | null
+          cosmo_balance?: number | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bnb_balance?: number | null
+          cosmo_balance?: number | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_balances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           created_at: string
