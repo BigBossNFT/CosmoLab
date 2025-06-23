@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +12,7 @@ import LevelSlider from '@/components/LevelSlider';
 import MatrixVisualization from '@/components/MatrixVisualization';
 import SystemInfoSection from '@/components/SystemInfoSection';
 import BalanceWidget from '@/components/BalanceWidget';
+import LevelPurchaseModal from '@/components/LevelPurchaseModal';
 
 interface AgentLevel {
   id: string;
@@ -49,6 +49,8 @@ const MatrixDashboard = () => {
   const [referralCount, setReferralCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [currentLevel, setCurrentLevel] = useState(1);
+  const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState(1);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -136,68 +138,18 @@ const MatrixDashboard = () => {
     }
   };
 
-  const unlockLevel = async (levelNumber: number, price: number) => {
-    try {
-      if (!window.ethereum) {
-        toast({
-          title: "Ошибка",
-          description: "MetaMask не найден"
-        });
-        return;
-      }
+  const handleLevelPurchase = (levelNumber: number) => {
+    setSelectedLevel(levelNumber);
+    setPurchaseModalOpen(true);
+  };
 
-      // Отправляем BNB транзакцию
-      const priceInWei = (price * Math.pow(10, 18)).toString(16);
-      
-      const txHash = await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          from: account,
-          to: '0x0000000000000000000000000000000000000000', // Адрес контракта
-          value: `0x${priceInWei}`,
-        }],
-      });
+  const handlePurchaseComplete = () => {
+    // Перезагружаем данные после успешной покупки
+    loadDashboardData();
+  };
 
-      // Об��овляем уровень в базе данных
-      const { error } = await supabase
-        .from('agent_levels')
-        .update({ 
-          is_unlocked: true, 
-          unlocked_at: new Date().toISOString() 
-        })
-        .eq('user_id', user.id)
-        .eq('level_number', levelNumber);
-
-      if (error) throw error;
-
-      // Записываем транзакцию
-      await supabase
-        .from('transactions')
-        .insert({
-          user_id: user.id,
-          transaction_type: 'purchase',
-          amount: price,
-          level_number: levelNumber,
-          tx_hash: txHash,
-          description: `Разблокирован Уровень Агентов ${levelNumber}`,
-          status: 'completed'
-        });
-
-      toast({
-        title: "Уровень разблокирован!",
-        description: `Уровень Агентов ${levelNumber} успешно разблокирован`
-      });
-
-      loadDashboardData();
-
-    } catch (error: any) {
-      console.error('Error unlocking level:', error);
-      toast({
-        title: "Ошибка разблокировки",
-        description: error.message || "Не удалось разблокировать уровень",
-        variant: "destructive"
-      });
-    }
+  const unlockLevel = (levelNumber: number) => {
+    handleLevelPurchase(levelNumber);
   };
 
   const copyReferralLink = () => {
@@ -338,7 +290,7 @@ const MatrixDashboard = () => {
                       </Badge>
                     ) : (
                       <Button 
-                        onClick={() => unlockLevel(level.level_number, level.unlock_price)}
+                        onClick={() => handleLevelPurchase(level.level_number)}
                         className="w-full bg-gradient-to-r from-neon-purple to-neon-blue hover:from-neon-blue hover:to-neon-green text-white"
                       >
                         Разблокировать
@@ -439,6 +391,15 @@ const MatrixDashboard = () => {
             <SystemInfoSection />
           </TabsContent>
         </Tabs>
+
+        {/* Модальное окно покупки */}
+        <LevelPurchaseModal
+          isOpen={purchaseModalOpen}
+          onClose={() => setPurchaseModalOpen(false)}
+          targetLevel={selectedLevel}
+          userId={user.id}
+          onPurchaseComplete={handlePurchaseComplete}
+        />
       </div>
     </div>
   );
