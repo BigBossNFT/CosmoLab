@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          wallet_address: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: string
+          wallet_address: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
       agent_levels: {
         Row: {
           created_at: string
@@ -46,6 +67,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      blog_articles: {
+        Row: {
+          author_name: string | null
+          category: string
+          content: string
+          created_at: string
+          excerpt: string
+          featured: boolean
+          id: string
+          image_url: string | null
+          meta_description: string | null
+          meta_title: string | null
+          published: boolean
+          read_time: number
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_name?: string | null
+          category: string
+          content: string
+          created_at?: string
+          excerpt: string
+          featured?: boolean
+          id?: string
+          image_url?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published?: boolean
+          read_time?: number
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string | null
+          category?: string
+          content?: string
+          created_at?: string
+          excerpt?: string
+          featured?: boolean
+          id?: string
+          image_url?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          published?: boolean
+          read_time?: number
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       "CosmoLab Matrix": {
         Row: {
@@ -278,6 +356,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_slug: {
+        Args: { title: string }
+        Returns: string
+      }
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -285,6 +367,10 @@ export type Database = {
       initialize_user_levels: {
         Args: { user_uuid: string }
         Returns: undefined
+      }
+      is_admin: {
+        Args: { wallet_addr: string }
+        Returns: boolean
       }
     }
     Enums: {

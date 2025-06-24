@@ -14,6 +14,7 @@ import Cases from "./pages/Cases";
 import Services from "./pages/Services";
 import CosmoToken from "./pages/CosmoToken";
 import Blog from "./pages/Blog";
+import BlogAdmin from "./pages/BlogAdmin";
 import Contact from "./pages/Contact";
 import Dashboard from "./pages/Dashboard";
 import MatrixDashboard from "./pages/MatrixDashboard";
@@ -41,6 +42,7 @@ const App = () => (
                   <Route path="/services" element={<Services />} />
                   <Route path="/cosmo-token" element={<CosmoToken />} />
                   <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog-admin" element={<BlogAdmin />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/matrix-dashboard" element={<MatrixDashboard />} />
