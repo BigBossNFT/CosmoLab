@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +31,22 @@ interface BlogArticle {
   created_at: string;
   updated_at: string;
 }
+
+type BlogArticleInsert = {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  image_url?: string;
+  category: string;
+  read_time: number;
+  published: boolean;
+  featured: boolean;
+  meta_title?: string;
+  meta_description?: string;
+  tags?: string[];
+  author_name: string;
+};
 
 const BlogAdmin = () => {
   const [articles, setArticles] = useState<BlogArticle[]>([]);
@@ -114,11 +129,20 @@ const BlogAdmin = () => {
 
     try {
       const slug = generateSlug(formData.title!);
-      const articleData = {
-        ...formData,
+      const articleData: BlogArticleInsert = {
+        title: formData.title!,
         slug,
+        excerpt: formData.excerpt!,
+        content: formData.content!,
+        category: formData.category || 'ИИ Технологии',
+        read_time: formData.read_time || 5,
+        published: formData.published || false,
+        featured: formData.featured || false,
+        image_url: formData.image_url,
         meta_title: formData.meta_title || formData.title,
-        meta_description: formData.meta_description || formData.excerpt
+        meta_description: formData.meta_description || formData.excerpt,
+        tags: formData.tags || [],
+        author_name: formData.author_name || 'CosmoLab Team'
       };
 
       let result;
@@ -130,7 +154,7 @@ const BlogAdmin = () => {
       } else {
         result = await supabase
           .from('blog_articles')
-          .insert([articleData]);
+          .insert(articleData);
       }
 
       if (result.error) throw result.error;
