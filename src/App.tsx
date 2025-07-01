@@ -31,7 +31,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter basename={import.meta.env.PROD ? '/CosmoLab' : ''}>
+          <BrowserRouter basename="/CosmoLab">
             <div className="min-h-screen flex flex-col bg-cosmos-dark">
               <Navbar />
               <main className="flex-1">
